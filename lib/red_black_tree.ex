@@ -16,10 +16,9 @@ defmodule RedBlackTree do
   use Dict
 
   @key_hash_bucket 4294967296
-
   # Inline key hashing
   @compile {:inline, hash_term: 1, fallback_term_hash: 1}
-
+  @behaviour Access
   @doc """
   Create a new RedBlackTree.
   Can either be initialized with no values, with values, or with values and
@@ -116,6 +115,10 @@ defmodule RedBlackTree do
     do_get(root, key, comparator)
   end
 
+  def get_and_update(tree, key, fun) do
+    {get, update} = fun.(get(tree, key))
+    {get, insert(tree, key, update)}
+  end
 
   ## Dict behaviour functions
   def size(%RedBlackTree{size: size}) do
@@ -618,17 +621,6 @@ defimpl Enumerable, for: RedBlackTree do
   def count(%RedBlackTree{size: size}), do: size
   def member?(%RedBlackTree{}=tree, key), do: RedBlackTree.has_key?(tree, key)
   def reduce(tree, acc, fun), do: RedBlackTree.reduce(tree, acc, fun)
-end
-
-defimpl Access, for: RedBlackTree do
-  def get(tree, key) do
-    RedBlackTree.get(tree, key)
-  end
-
-  def get_and_update(tree, key, fun) do
-    {get, update} = fun.(RedBlackTree.get(tree, key))
-    {get, RedBlackTree.insert(tree, key, update)}
-  end
 end
 
 defimpl Collectable, for: RedBlackTree do
